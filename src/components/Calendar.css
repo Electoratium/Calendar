@@ -1,0 +1,65 @@
+main {
+  display: grid;
+  justify-content: center;
+}
+#calendar-container h4 {
+  text-align: center;
+}
+.nav-month {
+  display: grid;
+  justify-content: center;
+  grid-auto-flow: column;
+  justify-content: space-between;
+  grid-template-columns: 1fr 1fr 1fr;
+  margin: 1vh 0;
+  grid-gap: 5vw;
+}
+.days-container {
+  width: 80vw;
+  display: grid;
+  justify-content: center;
+  grid-template-columns: repeat(7, minmax(50px, 14vw));
+  grid-gap: .5vw
+}
+.days-container div {
+  height: 15vh;
+  border: 1px solid black;
+  border-radius: 5%;
+  overflow: hidden auto;
+}
+.task {
+  margin: .5vh 0;
+  background: #2196F3;
+  color: white;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.day-index {
+  text-align: center;
+  margin: 0;
+}
+.popup {
+  width: 25vw;
+  display: grid;
+  position: absolute;
+  left: 35vw;
+  top: 50%;
+  border: 1px solid gray;
+  padding: 2vw 1vw;
+  background: lightgray;
+  box-shadow: 1px 1px 5px;
+  border-radius: 3%;
+}
+.btn {
+  margin: 5px 0;
+  border: 1px dashed black;
+  border-radius: 3%;
+}
+.cancel-btn {
+  background: red;
+}
+.success-btn {
+  background: green;
+}
