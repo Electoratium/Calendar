@@ -46,7 +46,7 @@ export default class Calendar extends Component {
       monthIndex = currDate.month() + 1;
       nmbDays = currDate.daysInMonth();
     }
-    
+
     days = new Array(nmbDays).fill([]);
     //already setted months if present
     currYearMonths = daysTask ? daysTask[year] : {};
@@ -69,10 +69,14 @@ export default class Calendar extends Component {
     const {month, year, daysTask} = this.state,
       {onShowPopupForm} = this;
 
+    //if changing state become async because of big chunk of data
+    if(!daysTask[year]) {
+        return <p>In loading process....</p>;
+    }
     return (
-      <Fragment>
+      <>
         {daysTask[year][month].map( (dayTasks, index) => <Day showPopup={onShowPopupForm} key={shortid.generate()} dayIndex={index} tasks={dayTasks} />)}
-      </Fragment>
+      </>
     );
   };
   onShowPopupForm = (dayIndex) => {
@@ -82,58 +86,69 @@ export default class Calendar extends Component {
     this.setState({isShowPopup: false});
   }
   onSavePopupForm = (newTask) => {
-    let { month, year, editedDay, daysTask } = this.state,
-      newDayTasks = [...daysTask[year][month][editedDay], newTask];
-    daysTask[year][month][editedDay] = newDayTasks;
-      this.setState({daysTask});
+    this.setState((state, props) => {
+      let { month, year, editedDay, daysTask } = state,
+        newDaytasks = [...daysTask[year][month][editedDay], newTask];
+      daysTask[year][month][editedDay] = newDaytasks;
+
+      return {
+        daysTask
+      }
+    });
   }
   changeMonth = (e) => {
+    const {insertMonth} = this;
     const button = e.currentTarget,
       action = button.getAttribute('data-action');
 
-    const {month, year, daysTask} = this.state,
-      {insertMonth} = this;
-    let monthIndex, newYear, newTasksState;
+    this.setState( (state) => {
+      const {month, year, daysTask} = state;
+      let monthIndex, newYear, newTasksState;
 
-    if(action === monthActions.prev) {
-      monthIndex = month - 1 < 0 ? 11 : month - 1;
-      newYear = month - 1 < 0 ? year - 1 : year;
-      // insert month data if task data doesn't contain this month or / and year
-      if(!daysTask.hasOwnProperty(year) || !daysTask[year].hasOwnProperty(monthIndex)) {
-        newTasksState = insertMonth(monthActions.prev, monthIndex, newYear);
+      if(action === monthActions.prev) {
+        monthIndex = month - 1 < 0 ? 11 : month - 1;
+        newYear = month - 1 < 0 ? year - 1 : year;
+        // insert month data if task data doesn't contain this month or / and year
+        if(!daysTask.hasOwnProperty(year) || !daysTask[year].hasOwnProperty(monthIndex)) {
+          newTasksState = insertMonth(monthActions.prev, monthIndex, newYear);
+        }
+        else {
+          newTasksState = {
+            month: monthIndex,
+            year: newYear
+          };
+        }
+      }
+      else if (action === monthActions.next) {
+        monthIndex = month + 1 > 11 ? 0 : month + 1;
+        newYear = month + 1 > 11 ? year + 1 : year;
+        if(!daysTask.hasOwnProperty(year) || !daysTask[year].hasOwnProperty(monthIndex)) {
+          newTasksState = insertMonth(monthActions.next, monthIndex, newYear);
+        }
+        else {
+          newTasksState = {
+            month: monthIndex,
+            year: newYear
+          };
+        }
       }
       else {
-        newTasksState = {
-          month: monthIndex,
-          year: newYear
-        };
-      }
-    }
-    else if (action === monthActions.next) {
-      monthIndex = month + 1 > 11 ? 0 : month + 1;
-      newYear = month + 1 > 11 ? year + 1 : year;
-      if(!daysTask.hasOwnProperty(year) || !daysTask[year].hasOwnProperty(monthIndex)) {
-        newTasksState = insertMonth(monthActions.next, monthIndex, newYear);
-      }
-      else {
-        newTasksState = {
-          month: monthIndex,
-          year: newYear
-        };
-      }
-    }
-    else {
-      // set current month by default (from 0 to 11)
-      const currDate = moment(),
-        year = currDate.year(),
-        monthIndex = currDate.month() + 1;
+        // set current month by default (from 0 to 11)
+        const currDate = moment(),
+          year = currDate.year(),
+          monthIndex = currDate.month() + 1;
 
-      newTasksState = {
-        month: monthIndex,
-        year: year
+        newTasksState = {
+          month: monthIndex,
+          year: year
+        };
+      }
+
+      return {
+        ...newTasksState
       };
-    }
-    this.setState({...newTasksState});
+    });
+
   }
 
   shouldComponentUpdate(nextProps, nextState) {
